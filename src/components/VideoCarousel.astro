@@ -1,0 +1,55 @@
+---
+import { readdir } from "fs/promises";
+import path from "path";
+
+// Get all video files from public/videos directory
+const videosDir = path.join(process.cwd(), "public", "videos");
+let videoFiles: string[] = [];
+
+try {
+  const files = await readdir(videosDir);
+  videoFiles = files.filter(
+    (file) =>
+      file.toLowerCase().endsWith(".mp4") ||
+      file.toLowerCase().endsWith(".webm") ||
+      file.toLowerCase().endsWith(".mov")
+  );
+  console.log("Found video files:", videoFiles);
+} catch (error) {
+  console.error("Error reading videos directory:", error);
+}
+
+// Duplicate the videos for infinite loop
+const duplicatedVideos = [...videoFiles, ...videoFiles];
+---
+
+<div class="video-carousel">
+  <div class="carousel-track">
+    {
+      duplicatedVideos.map((video, index) => (
+        <div class="video-slide" key={index}>
+          <video
+            src={`/videos/${video}`}
+            autoplay
+            muted
+            loop
+            playsinline
+            class="carousel-video"
+          >
+            Your browser does not support the video tag.
+          </video>
+          <div class="video-overlay">
+            <h3 class="video-title">
+              {video
+                .replace(/\.[^/.]+$/, "")
+                .replace(/_/g, " ")
+                .replace(/\d+/g, "")
+                .replace(/\s+/g, " ")
+                .trim()}
+            </h3>
+          </div>
+        </div>
+      ))
+    }
+  </div>
+</div>

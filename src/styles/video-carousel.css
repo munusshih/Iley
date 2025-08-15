@@ -1,0 +1,77 @@
+:root {
+    --carousel-gap: 2rem;
+    --animation-duration: 60s;
+    --overlay-padding: 2rem;
+    --title-font-size: 1.5rem;
+    --max-video-height: 80vh;
+}
+
+.video-carousel {
+    position: relative;
+    left: 0;
+    width: 100vw;
+    height: 85vh;
+    z-index: -1;
+    display: flex;
+    align-items: center;
+}
+
+.carousel-track {
+    display: flex;
+    gap: var(--carousel-gap);
+    animation: scroll-horizontal var(--animation-duration) linear infinite;
+}
+
+@keyframes scroll-horizontal {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.video-slide {
+    flex-shrink: 0;
+    position: relative;
+    max-height: var(--max-video-height);
+}
+
+.carousel-video {
+    max-height: var(--max-video-height);
+    width: auto;
+    height: auto;
+}
+
+.video-overlay {
+    position: relative;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    color: white;
+}
+
+.video-title {
+    margin: 0;
+    position: absolute;
+    font-size: var(--title-font-size);
+    font-weight: 100;
+    font-size: 1.2rem;
+    opacity: 0.4;
+    letter-spacing: -.025em;
+}
+
+@media (max-width: 768px) {
+    :root {
+        --carousel-gap: 1rem;
+        --animation-duration: 45s;
+        --overlay-padding: 1rem;
+        --title-font-size: 1.2rem;
+        --max-video-height: 40vh;
+    }
+
+    .video-carousel {
+        height: 50vh;
+    }
+}

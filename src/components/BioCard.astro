@@ -1,0 +1,126 @@
+---
+import { SITE_TITLE } from "../consts.ts";
+
+// Array of rotating content for the bio
+const bioContent = [
+  "is a social media director",
+  "creates viral content",
+  "designs multimedia experiences",
+  "specializes in brand storytelling",
+  "crafts digital narratives",
+  "leads creative campaigns",
+];
+---
+
+<div class="bio-card">
+  <h2 class="bio-title">
+    <a href="/"
+      >{SITE_TITLE}
+      <span class="rotating-text" id="rotating-text">{bioContent[0]}</span></a
+    >
+  </h2>
+</div>
+
+<script>
+  import { gsap } from "gsap";
+
+  // Bio content array for rotation
+  const bioContent = [
+    "is a social media director",
+    "creates viral content",
+    "designs multimedia experiences",
+    "specializes in brand storytelling",
+    "crafts digital narratives",
+    "leads creative campaigns",
+  ];
+
+  class BioCardAnimation {
+    private currentIndex = 0;
+    private textElement: HTMLElement | null = null;
+    private timeline: gsap.core.Timeline | null = null;
+
+    constructor() {
+      this.init();
+    }
+
+    private init() {
+      this.textElement = document.getElementById("rotating-text");
+      if (!this.textElement) return;
+
+      this.createTimeline();
+      this.startAnimation();
+    }
+
+    private createTimeline() {
+      this.timeline = gsap.timeline({ repeat: -1 });
+
+      // Initial delay
+      this.timeline.to({}, { duration: 2 });
+
+      // Animate through each bio text
+      bioContent.forEach((_, index) => {
+        if (index === 0) return; // Skip first item as it's already shown
+
+        this.timeline
+          .to(this.textElement, {
+            opacity: 0,
+            y: -20,
+            duration: 0.5,
+            ease: "power2.inOut",
+          })
+          .call(() => {
+            this.updateText(index);
+          })
+          .to(this.textElement, {
+            opacity: 1,
+            y: 0,
+            duration: 0.5,
+            ease: "power2.inOut",
+          })
+          .to({}, { duration: 2 }); // Hold for 2 seconds
+      });
+
+      // Loop back to first item
+      this.timeline
+        .to(this.textElement, {
+          opacity: 0,
+          y: -20,
+          duration: 0.5,
+          ease: "power2.inOut",
+        })
+        .call(() => {
+          this.updateText(0);
+        })
+        .to(this.textElement, {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          ease: "power2.inOut",
+        });
+    }
+
+    private updateText(index: number) {
+      if (this.textElement) {
+        this.textElement.textContent = bioContent[index];
+        this.currentIndex = index;
+      }
+    }
+
+    private startAnimation() {
+      this.timeline?.play();
+    }
+
+    public pause() {
+      this.timeline?.pause();
+    }
+
+    public resume() {
+      this.timeline?.resume();
+    }
+  }
+
+  // Initialize the animation when DOM is loaded
+  document.addEventListener("DOMContentLoaded", () => {
+    new BioCardAnimation();
+  });
+</script>

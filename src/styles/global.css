@@ -1,0 +1,61 @@
+@import "./video-carousel.css";
+
+* {
+    font-family: "Radio Canada Big", sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: black;
+    text-decoration: none;
+    font-size: 1.15rem;
+}
+
+
+header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+}
+
+nav {
+    display: flex;
+    gap: 1.5rem;
+    opacity: 0.5;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    opacity: 0.5;
+}
+
+@media screen and (max-width: 768px) {
+
+    header,
+    nav {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0em;
+    }
+
+    * {
+        font-size: 1rem;
+    }
+
+    .video-carousel {
+        top: 0rem;
+    }
+
+    footer {
+        position: relative;
+        margin-top: 2rem;
+    }
+}
