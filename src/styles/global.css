@@ -1,4 +1,6 @@
 @import "./video-carousel.css";
+@import "./project.css";
+@import "./slug.css";
 
 * {
     font-family: "Radio Canada Big", sans-serif;
@@ -20,6 +22,17 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
+}
+
+#site-navigation {
+    position: fixed;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+}
+
+main {
+    padding-top: 4rem;
 }
 
 nav {
@@ -60,6 +73,7 @@ footer {
     }
 }
 
-html, body {
+html,
+body {
     overflow-x: hidden;
 }

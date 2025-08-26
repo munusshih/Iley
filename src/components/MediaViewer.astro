@@ -1,0 +1,362 @@
+---
+interface Props {
+  src: string;
+  alt: string;
+  title?: string;
+}
+
+const { src, alt, title } = Astro.props;
+
+// Determine media type from file extension
+function getMediaType(url: string): "image" | "video" | "unknown" {
+  if (!url) return "unknown";
+
+  const extension = url.split(".").pop()?.toLowerCase();
+
+  const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp", "svg"];
+  const videoExtensions = ["mp4", "mov", "avi", "webm", "ogv"];
+
+  if (imageExtensions.includes(extension || "")) return "image";
+  if (videoExtensions.includes(extension || "")) return "video";
+
+  return "unknown";
+}
+
+const mediaType = getMediaType(src);
+---
+
+<div class="media-viewer">
+  <!-- {title && <h4 class="media-title">{title}</h4>} -->
+
+  {
+    mediaType === "image" && (
+      <div class="image-container">
+        <img src={src} alt={alt} loading="lazy" />
+      </div>
+    )
+  }
+
+  {
+    mediaType === "video" && (
+      <div class="video-container">
+        <video
+          muted
+          autoplay
+          loop
+          preload="metadata"
+          poster=""
+          playsinline
+          class="video-player"
+        >
+          <source src={src} type={`video/${src.split(".").pop()}`} />
+          Your browser does not support the video tag.
+          <p>
+            <a href={src} target="_blank" rel="noopener noreferrer">
+              Download video: {alt}
+            </a>
+          </p>
+        </video>
+        <button class="sound-toggle" aria-label="Toggle sound">
+          <div class="sound-toggle-bg" />
+          <svg
+            class="sound-icon sound-off"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <line x1="23" y1="9" x2="17" y2="15" />
+            <line x1="17" y1="9" x2="23" y2="15" />
+          </svg>
+          <svg
+            class="sound-icon sound-on"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+          </svg>
+        </button>
+      </div>
+    )
+  }
+
+  {
+    mediaType === "unknown" && (
+      <div class="fallback-container">
+        <a
+          href={src}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="media-link"
+        >
+          📁 {alt || "View Media"}
+        </a>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .media-viewer {
+    background: var(--gray-light);
+    overflow: hidden;
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .media-viewer:hover {
+    transform: translateY(-2px);
+  }
+
+  .media-title {
+    padding: 1rem;
+    margin: 0;
+    font-size: 1rem;
+    color: var(--gray-dark);
+  }
+
+  .image-container,
+  .video-container,
+  .fallback-container {
+    position: relative;
+    width: 100%;
+  }
+
+  .video-container {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .video-container video {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 1000px;
+  }
+
+  .sound-toggle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: none;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .video-container:hover .sound-toggle {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .video-container.no-audio .sound-toggle {
+    display: none;
+  }
+
+  .sound-toggle-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+  }
+
+  .sound-toggle:hover .sound-toggle-bg {
+    transform: scale(1.2);
+  }
+
+  .sound-toggle:hover .sound-toggle-bg {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .sound-icon {
+    width: 40px;
+    height: 40px;
+    transition: all 0.3s ease;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    color: white;
+    stroke: white;
+    stroke-width: 1.5;
+  }
+
+  .sound-on {
+    opacity: 0;
+  }
+
+  .video-container.unmuted .sound-off {
+    opacity: 0;
+  }
+
+  .video-container.unmuted .sound-on {
+    opacity: 1;
+  }
+
+  .fallback-container {
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .media-link {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+  }
+
+  .media-link:hover {
+    background: var(--accent-dark);
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .image-container img,
+    .video-container video {
+      max-height: 250px;
+    }
+
+    .media-title {
+      font-size: 0.9rem;
+      padding: 0.75rem;
+    }
+
+    .sound-toggle {
+      width: 60px;
+      height: 60px;
+    }
+
+    .sound-icon {
+      width: 48px;
+      height: 48px;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Handle sound toggle for all videos
+    const videoContainers = document.querySelectorAll(".video-container");
+
+    videoContainers.forEach((container) => {
+      const video = container.querySelector(".video-player");
+      const soundToggle = container.querySelector(".sound-toggle");
+
+      if (video && soundToggle) {
+        // Check if video has audio tracks once metadata is loaded
+        video.addEventListener("loadedmetadata", function () {
+          // More conservative audio detection - only hide if we're certain there's no audio
+          let hasNoAudio = false;
+
+          // Check Firefox-specific property
+          if (
+            typeof video.mozHasAudio !== "undefined" &&
+            video.mozHasAudio === false
+          ) {
+            hasNoAudio = true;
+          }
+
+          // Check WebKit-specific property (Safari/Chrome)
+          if (
+            typeof video.webkitAudioDecodedByteCount !== "undefined" &&
+            video.webkitAudioDecodedByteCount === 0
+          ) {
+            // Only consider this if the video has played for a bit
+            setTimeout(() => {
+              if (
+                video.webkitAudioDecodedByteCount === 0 &&
+                video.currentTime > 0.5
+              ) {
+                container.classList.add("no-audio");
+              }
+            }, 1000);
+          }
+
+          // Check audioTracks property (modern browsers)
+          if (video.audioTracks && video.audioTracks.length === 0) {
+            hasNoAudio = true;
+          }
+
+          if (hasNoAudio) {
+            container.classList.add("no-audio");
+          }
+        });
+
+        // Additional check after some video plays - only for webkit browsers
+        video.addEventListener("timeupdate", function checkAudio() {
+          if (video.currentTime > 1.0) {
+            // Check after 1 second of playback
+            if (
+              typeof video.webkitAudioDecodedByteCount !== "undefined" &&
+              video.webkitAudioDecodedByteCount === 0
+            ) {
+              container.classList.add("no-audio");
+            }
+            // Remove this listener after first check
+            video.removeEventListener("timeupdate", checkAudio);
+          }
+        });
+
+        soundToggle.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          // Don't do anything if this video has no audio
+          if (container.classList.contains("no-audio")) {
+            return;
+          }
+
+          if (video.muted) {
+            // Mute all other videos first
+            videoContainers.forEach((otherContainer) => {
+              if (otherContainer !== container) {
+                const otherVideo =
+                  otherContainer.querySelector(".video-player");
+                if (otherVideo && !otherVideo.muted) {
+                  otherVideo.muted = true;
+                  otherContainer.classList.remove("unmuted");
+                }
+              }
+            });
+
+            // Unmute this video
+            video.muted = false;
+            container.classList.add("unmuted");
+          } else {
+            // Mute this video
+            video.muted = true;
+            container.classList.remove("unmuted");
+          }
+        });
+      }
+    });
+  });
+</script>

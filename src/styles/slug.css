@@ -1,0 +1,110 @@
+.project-detail {
+    width: 75%;
+    float: right;
+}
+
+.project-header {
+    padding: 0;
+    margin-top: 1rem;
+    align-items: flex-start;
+}
+
+.project-title {
+    margin-top: 0;
+}
+
+.project-header * {
+    padding: 0;
+    font-size: 2rem;
+    font-weight: 300;
+    line-height: 1;
+}
+
+.project-detail .project-meta {
+    width: 100%;
+    gap: 0.5rem;
+    margin-bottom: 0;
+    line-height: 1;
+}
+
+.project-detail .project-meta .category,
+.project-detail .project-meta .year {
+    font-size: 2rem;
+    font-weight: 300;
+    padding: 0;
+    color: #aaa;
+}
+
+.project-detail .project-meta .year::before {
+    content: ", ";
+}
+
+.project-thumbnail img {
+    width: 100%;
+    height: auto;
+    display: block;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+}
+
+.project-content {
+    line-height: 1.6;
+}
+
+.short-description {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    color: var(--gray-dark);
+    text-align: center;
+}
+
+.description,
+.credit,
+.hero-moment {
+    margin-bottom: 2rem;
+}
+
+.description h3,
+.credit h3,
+.hero-moment h3,
+.media-gallery h3 {
+    color: var(--accent);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.media-gallery {
+    margin-bottom: 2rem;
+}
+
+.media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.project-nav {
+    text-align: center;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--gray-light);
+}
+
+.project-nav a {
+    background: var(--gray-dark);
+    color: white;
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.project-nav a:hover {
+    background: var(--accent);
+}
+
+.media-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}

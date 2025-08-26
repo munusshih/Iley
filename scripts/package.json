@@ -1,0 +1,13 @@
+{
+    "name": "asset-downloader",
+    "version": "1.0.0",
+    "description": "Download Google Drive assets for Iley portfolio",
+    "type": "module",
+    "scripts": {
+        "download-assets": "node scripts/download-assets.js",
+        "update-assets": "node scripts/download-assets.js"
+    },
+    "dependencies": {
+        "node-fetch": "^3.3.2"
+    }
+}

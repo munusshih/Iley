@@ -1,0 +1,136 @@
+---
+import { getCollection } from "astro:content";
+import BasicLayout from "../../layouts/BasicLayout.astro";
+import MediaViewer from "../../components/MediaViewer.astro";
+
+export async function getStaticPaths() {
+  const projects = await getCollection("projects");
+  return projects.map((project) => {
+    return {
+      params: { slug: project.id },
+      props: { project },
+    };
+  });
+}
+
+const { project } = Astro.props;
+---
+
+<BasicLayout
+  title={project.data.projectName}
+  description={project.data.shortDescription}
+>
+  <main>
+    <article class="project-detail">
+      {
+        project.data.thumbnailImage && (
+          <div class="project-thumbnail">
+            <MediaViewer
+              src={project.data.thumbnailImage}
+              alt={`${project.data.projectName} thumbnail`}
+              title="Thumbnail"
+            />
+          </div>
+        )
+      }
+
+      <header class="project-header">
+        <div class="left-column">
+          <div class="project-title">
+            <h1>{project.data.projectName}</h1>
+          </div>
+
+          <div class="project-meta">
+            <span class="category">{project.data.categories}</span>
+            <span class="year">{project.data.year}</span>
+          </div>
+        </div>
+
+        <div class="right-column">
+          <p class="short-description">{project.data.shortDescription}</p>
+        </div>
+      </header>
+
+      <div class="project-content">
+        {
+          project.data.description && (
+            <div class="description">
+              <h3>Description</h3>
+              <p>{project.data.description}</p>
+            </div>
+          )
+        }
+
+        {
+          project.data.credit && (
+            <div class="credit">
+              <h3>Credits</h3>
+              <p>{project.data.credit}</p>
+            </div>
+          )
+        }
+
+        <!-- {
+          project.data.heroMoment && (
+            <div class="hero-moment">
+              <h3>Hero Moment</h3>
+              <p>{project.data.heroMoment}</p>
+            </div>
+          )
+        } -->
+
+        <div class="media-gallery">
+          {
+            project.data.workImage1 && (
+              <MediaViewer
+                src={project.data.workImage1}
+                alt={`${project.data.projectName} work sample 1`}
+                title="Work Sample 1"
+              />
+            )
+          }
+          {
+            project.data.workImage2 && (
+              <MediaViewer
+                src={project.data.workImage2}
+                alt={`${project.data.projectName} work sample 2`}
+                title="Work Sample 2"
+              />
+            )
+          }
+          {
+            project.data.workImage3 && (
+              <MediaViewer
+                src={project.data.workImage3}
+                alt={`${project.data.projectName} work sample 3`}
+                title="Work Sample 3"
+              />
+            )
+          }
+          {
+            project.data.workImage4 && (
+              <MediaViewer
+                src={project.data.workImage4}
+                alt={`${project.data.projectName} work sample 4`}
+                title="Work Sample 4"
+              />
+            )
+          }
+          {
+            project.data.workImage5 && (
+              <MediaViewer
+                src={project.data.workImage5}
+                alt={`${project.data.projectName} work sample 5`}
+                title="Work Sample 5"
+              />
+            )
+          }
+        </div>
+      </div>
+
+      <nav class="project-nav">
+        <a href="/projects">← Back to Projects</a>
+      </nav>
+    </article>
+  </main>
+</BasicLayout>

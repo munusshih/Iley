@@ -1,0 +1,59 @@
+---
+import { getCollection } from "astro:content";
+import BasicLayout from "../../layouts/BasicLayout.astro";
+import MediaViewer from "../../components/MediaViewer.astro";
+
+let projects = [];
+try {
+  projects = await getCollection("projects");
+  console.log(`Found ${projects.length} projects in collection`);
+} catch (error) {
+  console.error("Error loading projects collection:", error);
+  projects = [];
+}
+---
+
+<BasicLayout
+  title="Projects"
+  description="Portfolio projects from Google Sheets"
+>
+  <main>
+    <h1>Selected Projects</h1>
+    <div class="projects-grid">
+      {
+        projects.map((project) => (
+          <article class="project-card">
+            <a href={`/projects/${project.id}`}>
+              {project.data.thumbnailImage && (
+                <div class="project-thumbnail">
+                  <MediaViewer
+                    src={project.data.thumbnailImage}
+                    alt={`${project.data.projectName} thumbnail`}
+                  />
+                </div>
+              )}
+              <div class="project-content">
+                <h2 class="project-title">
+                  {project.data.projectName}
+                  <span class="year">, {project.data.year}</span>
+                </h2>
+                <p class="description">
+                  {" "}
+                  <span class="category">
+                    #{project.data.categories.replaceAll("?", "")}
+                  </span>
+                  / {project.data.shortDescription}
+                </p>
+                {/* <div class="project-actions">
+                <a href={`/projects/${project.id}`} class="view-project-btn">
+                  View Full Project →
+                </a>
+              </div> */}
+              </div>
+            </a>
+          </article>
+        ))
+      }
+    </div>
+  </main>
+</BasicLayout>
