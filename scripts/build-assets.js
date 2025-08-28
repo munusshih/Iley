@@ -60,6 +60,9 @@ const OPENSHEET_URL =
 const ASSETS_DIR = path.join(__dirname, "../public/assets/projects");
 const OUTPUT_FILE = path.join(__dirname, "../src/data/projects.json");
 
+// File size limits (in bytes)
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB limit
+
 // Google Drive URL patterns
 const GOOGLE_DRIVE_PATTERNS = [
   /https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)\/view/,
@@ -90,11 +93,14 @@ function getDirectDownloadUrl(url) {
 // Create safe filename
 // Function to detect file type from content
 function detectFileType(buffer) {
+  // Check for video formats first
+
   // Check for MP4/video formats (ISO Base Media File Format)
   const ftypIndex = buffer.indexOf("ftyp");
-  if (ftypIndex !== -1 && ftypIndex <= 8) {
+  if (ftypIndex !== -1 && ftypIndex <= 12) {
     // Check the brand after 'ftyp'
     const brand = buffer.slice(ftypIndex + 4, ftypIndex + 8).toString();
+    console.log(`🔍 Video brand detected: ${brand}`);
     if (
       brand.includes("mp4") ||
       brand.includes("isom") ||
@@ -111,8 +117,16 @@ function detectFileType(buffer) {
     return ".mp4";
   }
 
-  // Check for other video formats
+  // Check for other video format signatures
   if (buffer.slice(0, 3).toString() === "AVI") return ".avi";
+  if (
+    buffer.slice(0, 4).toString() === "RIFF" &&
+    buffer.slice(8, 12).toString() === "AVI "
+  )
+    return ".avi";
+
+  // WebM format
+  if (buffer.slice(0, 4).toString("hex") === "1a45dfa3") return ".webm";
 
   // Check for image formats
   if (buffer.slice(0, 2).toString("hex") === "ffd8") return ".jpg";
@@ -128,7 +142,45 @@ function detectFileType(buffer) {
   )
     return ".webp";
 
-  // Default fallback
+  // If we can't detect, check file size and content
+  // Large files (>1MB) are likely videos if they're not images
+  if (buffer.length > 1024 * 1024) {
+    console.log(
+      `🔍 Large file detected (${(buffer.length / 1024 / 1024).toFixed(
+        1
+      )}MB), assuming video format`
+    );
+    return ".mp4";
+  }
+
+  // Default fallback - be more conservative about defaulting to .jpg
+  // If we can't detect the type, assume it might be a video if the file is large
+  const bufferSize = buffer.length;
+  if (bufferSize > 10000) {
+    // If file is larger than 10KB, it's likely not an HTML error page
+    // Check if this might be a video based on common video patterns
+    const bufferStr = buffer.toString("hex", 0, Math.min(100, bufferSize));
+    if (
+      bufferStr.includes("66747970") || // 'ftyp' in hex (common in video files)
+      bufferStr.includes("6d6f6f76") || // 'moov' in hex
+      bufferStr.includes("6d646174")
+    ) {
+      // 'mdat' in hex
+      return ".mp4";
+    }
+  }
+
+  // For very small files, check if it's HTML (error page)
+  if (bufferSize < 5000) {
+    const textContent = buffer.toString("ascii", 0, Math.min(100, bufferSize));
+    if (textContent.includes("<html>") || textContent.includes("<!DOCTYPE")) {
+      throw new Error(
+        "Downloaded file appears to be an HTML error page, not media content"
+      );
+    }
+  }
+
+  console.log(`⚠️ Could not detect file type, defaulting to .jpg`);
   return ".jpg";
 }
 
@@ -148,7 +200,12 @@ function createSafeFilename(
 }
 
 // Download file with redirect handling
-async function downloadFile(url, filepath, retries = 2) {
+async function downloadFile(url, filepath, retries = 2, fileId = null) {
+  // Extract fileId from URL if not provided
+  if (!fileId) {
+    fileId = extractDriveFileId(url);
+  }
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       console.log(
@@ -171,7 +228,7 @@ async function downloadFile(url, filepath, retries = 2) {
               )}...`
             );
             file.destroy();
-            downloadFile(redirectUrl, filepath, retries)
+            downloadFile(redirectUrl, filepath, retries, fileId)
               .then(resolve)
               .catch(reject);
             return;
@@ -200,7 +257,25 @@ async function downloadFile(url, filepath, retries = 2) {
             }
           }
 
+          let totalSize = 0;
+
           response.on("data", (chunk) => {
+            totalSize += chunk.length;
+
+            // Check file size limit
+            if (totalSize > MAX_FILE_SIZE) {
+              file.destroy();
+              fs.unlink(filepath, () => {});
+              reject(
+                new Error(
+                  `File too large: ${(totalSize / 1024 / 1024).toFixed(
+                    1
+                  )}MB exceeds ${MAX_FILE_SIZE / 1024 / 1024}MB limit`
+                )
+              );
+              return;
+            }
+
             if (firstChunk && fileBuffer.length < 1024) {
               fileBuffer = Buffer.concat([fileBuffer, chunk]);
               firstChunk = false;
@@ -214,6 +289,70 @@ async function downloadFile(url, filepath, retries = 2) {
 
           file.on("finish", () => {
             file.close();
+
+            // Read the file to detect its actual type
+            const fileBuffer = fs.readFileSync(filepath);
+
+            // Check if file is HTML (failed download or virus warning)
+            const fileContent = fileBuffer.toString(
+              "utf8",
+              0,
+              Math.min(1000, fileBuffer.length)
+            );
+            if (
+              fileContent.includes("<html") ||
+              fileContent.includes("<!DOCTYPE") ||
+              fileContent.includes("<title>")
+            ) {
+              console.log(
+                `⚠️  Got HTML response, checking for virus scan warning...`
+              );
+
+              // Check for Google Drive virus scan warning
+              if (
+                fileContent.includes("virus scan warning") ||
+                fileContent.includes("Google Drive can't scan this file")
+              ) {
+                console.log(`🔄 Handling Google Drive virus scan warning...`);
+
+                // Extract the direct download URL from the HTML form
+                const confirmMatch = fileContent.match(
+                  /name="confirm"\s+value="([^"]+)"/
+                );
+                const uuidMatch = fileContent.match(
+                  /name="uuid"\s+value="([^"]+)"/
+                );
+
+                if (confirmMatch && uuidMatch) {
+                  const confirmValue = confirmMatch[1];
+                  const uuidValue = uuidMatch[1];
+                  const directUrl = `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=${confirmValue}&uuid=${uuidValue}`;
+
+                  console.log(`🔄 Retrying with direct download URL...`);
+                  fs.unlinkSync(filepath);
+
+                  // Retry download with the direct URL
+                  downloadFile(directUrl, filepath, 1, fileId)
+                    .then(resolve)
+                    .catch(reject);
+                  return;
+                } else {
+                  console.log(
+                    `⚠️  Could not extract confirm/uuid values from virus warning page`
+                  );
+                  console.log(
+                    `HTML content sample: ${fileContent.substring(0, 300)}...`
+                  );
+                }
+              }
+
+              console.error(
+                `❌ Downloaded HTML instead of media file. Google Drive may have restricted access.`
+              );
+              fs.unlinkSync(filepath);
+              reject(new Error("Downloaded HTML instead of media file"));
+              return;
+            }
 
             // Use original filename if available, otherwise detect file type
             let finalFilepath = filepath;
