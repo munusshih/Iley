@@ -6,44 +6,10 @@
  * This script automatically:
  * 1. Fetches project data from Google Sheets
  * 2. Downloads all Google Drive assets to local storage
- * 3. Updates project data to use loca        const fileId = extractDriveFileId(url);
-        if (!fileId) {
-          console.log(`⚠️  Skipping ${field}: Not a Google Drive URL`);
-          continue;
-        }
-
-        const tempFilename = createSafeFilename(projectName, field, url, '.tmp');
-        const tempFilepath = path.join(ASSETS_DIR, tempFilename);
-
-        // Check if a file with this pattern already exists (any extension)
-        const filePattern = tempFilename.replace('.tmp', '');
-        const existingFiles = fs.readdirSync(ASSETS_DIR).filter(f => f.startsWith(filePattern));
-
-        if (existingFiles.length > 0) {
-          const existingFile = existingFiles[0];
-          const existingPath = path.join(ASSETS_DIR, existingFile);
-          const stats = fs.statSync(existingPath);
-          if (stats.size > 0) {
-            console.log(`⏭️  Skipping ${field}: File already exists (${existingFile}, ${(stats.size / 1024).toFixed(1)}KB)`);
-            project[field] = `/assets/projects/${existingFile}`;
-            skipCount++;
-            continue;
-          }
-        }
-
-        try {
-          const downloadUrl = getDirectDownloadUrl(url);
-          const finalFilepath = await downloadFile(downloadUrl, tempFilepath);
-          const finalFilename = path.basename(finalFilepath);
-
-          // Update project data with local path
-          project[field] = `/assets/projects/${finalFilename}`;
-          downloadCount++;
-
-        } catch (error) {
-          console.error(`❌ Failed to download ${field}:`, error.message);
-          errorCount++;
-          // Keep the original URL if download fails Optimized for Vercel build process
+ * 3. Updates project data to use local asset paths (saved under public/assets/projects)
+ *
+ * It is optimized to run at build-time (for example, on Vercel) and includes
+ * logic to handle Google Drive download redirects and virus-scan confirmation pages.
  */
 
 import fs from "fs";
@@ -59,6 +25,19 @@ const OPENSHEET_URL =
   "https://opensheet.elk.sh/1o30Uy7jtfAR2lc20Cycahrk13tq_SDdKkIbNQnQvTRY/Work";
 const ASSETS_DIR = path.join(__dirname, "../public/assets/projects");
 const OUTPUT_FILE = path.join(__dirname, "../src/data/projects.json");
+
+// Additional sheet tabs to fetch
+const BASE_OPENSHEET_URL = OPENSHEET_URL.replace(/\/[^^/]+$/, "");
+const HOME_PAGE_TAB = "Home Page";
+const ABOUT_PAGE_TAB = "About Page";
+const OUTPUT_HOME_FILE = path.join(
+  __dirname,
+  "../src/data/homepage-local.json"
+);
+const OUTPUT_ABOUT_FILE = path.join(
+  __dirname,
+  "../src/data/aboutpage-local.json"
+);
 
 // File size limits (in bytes)
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB limit
@@ -212,7 +191,7 @@ async function downloadFile(url, filepath, retries = 2, fileId = null) {
         `📥 Downloading (${attempt}/${retries}): ${path.basename(filepath)}`
       );
 
-      await new Promise((resolve, reject) => {
+      const _finalPath = await new Promise((resolve, reject) => {
         const file = fs.createWriteStream(filepath);
         let firstChunk = true;
         let fileBuffer = Buffer.alloc(0);
@@ -408,7 +387,7 @@ async function downloadFile(url, filepath, retries = 2, fileId = null) {
         });
       });
 
-      return filepath; // Success
+      return _finalPath || filepath; // Success - prefer final path returned from promise
     } catch (error) {
       console.error(`❌ Attempt ${attempt} failed:`, error.message);
       if (attempt === retries) throw error;
@@ -438,16 +417,131 @@ async function fetchProjectData() {
     year: row["Year"] || "",
     categories: row["Categories"] || "",
     shortDescription: row["Short Description"] || "",
+    role: row["Role"] || "",
     description: row["Description (Optional)"] || "",
     credit: row["Credit"] || "",
     heroMoment: row["Hero Moment"] || "",
     thumbnailImage: row["Thumbnail Image"] || "",
     workImage1: row["Work Image/Video 1"] || "",
+    workImage1Description:
+      row["Work Image/Video 1 Description"] ||
+      row["Work Image 1 Description"] ||
+      "",
     workImage2: row["Work Image/Video 2"] || "",
+    workImage2Description:
+      row["Work Image/Video 2 Description"] ||
+      row["Work Image 2 Description"] ||
+      "",
     workImage3: row["Work Image/Video 3"] || "",
+    workImage3Description:
+      row["Work Image/Video 3 Description"] ||
+      row["Work Image 3 Description"] ||
+      "",
     workImage4: row["Work Image/Video 4"] || "",
+    workImage4Description:
+      row["Work Image/Video 4 Description"] ||
+      row["Work Image 4 Description"] ||
+      "",
     workImage5: row["Work Image/Video 5"] || "",
+    workImage5Description:
+      row["Work Image/Video 5 Description"] ||
+      row["Work Image 5 Description"] ||
+      "",
   }));
+}
+
+// Generic fetcher for an OpenSheet tab by name
+async function fetchSheetTab(tabName) {
+  const url = `${BASE_OPENSHEET_URL}/${encodeURIComponent(tabName)}`;
+  console.log(`📊 Fetching sheet tab: ${tabName} -> ${url}`);
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch sheet tab ${tabName}: ${response.status} ${response.statusText}`
+    );
+  }
+  const data = await response.json();
+  if (!Array.isArray(data)) {
+    throw new Error(`Expected array from sheet tab ${tabName}`);
+  }
+  console.log(`✅ Fetched ${data.length} rows from tab: ${tabName}`);
+  return data;
+}
+
+// Process a sheet tab and optionally download media fields (Google Drive links)
+async function processSheetTab(
+  tabName,
+  outputFile,
+  { downloadMedia = false } = {}
+) {
+  try {
+    const rows = await fetchSheetTab(tabName);
+
+    // Fields that likely contain media
+    const mediaKeyRegex = /video|media|asset|thumbnail|image/i;
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+
+      for (const key of Object.keys(row)) {
+        const value = row[key];
+        if (!value || typeof value !== "string") continue;
+
+        // If the key looks like media or the value looks like a drive url
+        if (mediaKeyRegex.test(key) || extractDriveFileId(value)) {
+          const fileId = extractDriveFileId(value);
+          if (fileId && downloadMedia) {
+            // Make a safe base name using tabName + index
+            const baseName = `${tabName
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")}-${i + 1}`;
+            const filename = createSafeFilename(baseName, key, value, ".tmp");
+            const filepath = path.join(ASSETS_DIR, filename);
+
+            // Skip if already downloaded
+            if (fs.existsSync(filepath)) {
+              const stats = fs.statSync(filepath);
+              if (stats.size > 0) {
+                row[key] = `/assets/projects/${path.basename(filepath)}`;
+                continue;
+              }
+            }
+
+            try {
+              const downloadUrl = getDirectDownloadUrl(value);
+              const finalPath = await downloadFile(
+                downloadUrl,
+                filepath,
+                2,
+                fileId
+              );
+              const finalName = path.basename(finalPath);
+              row[key] = `/assets/projects/${finalName}`;
+            } catch (err) {
+              console.error(
+                `❌ Failed to download media for ${tabName}[${i}].${key}:`,
+                err.message
+              );
+              // leave original value
+            }
+          } else {
+            // Not a Drive URL or not downloading media: keep as-is
+          }
+        }
+      }
+    }
+
+    // Ensure output directory exists
+    const outDir = path.dirname(outputFile);
+    if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+    fs.writeFileSync(outputFile, JSON.stringify(rows, null, 2));
+    console.log(`💾 Saved ${tabName} data to: ${outputFile}`);
+    return rows;
+  } catch (error) {
+    console.error(`❌ Error processing sheet tab ${tabName}:`, error.message);
+    throw error;
+  }
 }
 
 // Function to sync project data with actual downloaded filenames
@@ -604,6 +698,25 @@ async function processAssets() {
     // Save processed project data
     fs.writeFileSync(OUTPUT_FILE, JSON.stringify(projects, null, 2));
     console.log(`\n💾 Saved project data to: ${OUTPUT_FILE}`);
+
+    // Also fetch and process Home Page and About Page tabs
+    try {
+      // Home Page: download media assets (videos) and save local paths
+      await processSheetTab(HOME_PAGE_TAB, OUTPUT_HOME_FILE, {
+        downloadMedia: true,
+      });
+    } catch (err) {
+      console.warn(`⚠️  Unable to fully process Home Page tab: ${err.message}`);
+    }
+
+    try {
+      // About Page: just save the JSON, no media downloads
+      await processSheetTab(ABOUT_PAGE_TAB, OUTPUT_ABOUT_FILE, {
+        downloadMedia: false,
+      });
+    } catch (err) {
+      console.warn(`⚠️  Unable to fetch About Page tab: ${err.message}`);
+    }
 
     // Summary
     console.log(`\n✅ Build-time asset processing complete!`);

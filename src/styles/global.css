@@ -1,6 +1,7 @@
 @import "./video-carousel.css";
 @import "./project.css";
 @import "./slug.css";
+@import "./bio-card.css";
 
 * {
     font-family: "Radio Canada Big", sans-serif;
@@ -15,6 +16,11 @@
     font-size: 1.15rem;
 }
 
+#homepage main {
+    padding-top: 3rem;
+    padding-bottom: 7rem;
+    height: auto;
+}
 
 header {
     display: flex;
@@ -29,10 +35,12 @@ header {
     top: 0;
     z-index: 100;
     width: 100%;
+    background: #fff;
 }
 
 main {
-    padding-top: 4rem;
+    padding-top: 10rem;
+    padding-bottom: 10rem;
 }
 
 nav {
@@ -42,7 +50,6 @@ nav {
 }
 
 footer {
-    position: fixed;
     bottom: 0;
     left: 0;
     right: 0;

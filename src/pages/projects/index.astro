@@ -37,13 +37,7 @@ try {
                   {project.data.projectName}
                   <span class="year">, {project.data.year}</span>
                 </h2>
-                <p class="description">
-                  {" "}
-                  <span class="category">
-                    #{project.data.categories.replaceAll("?", "")}
-                  </span>
-                  / {project.data.shortDescription}
-                </p>
+                <p class="description">{project.data.shortDescription}</p>
                 {/* <div class="project-actions">
                 <a href={`/projects/${project.id}`} class="view-project-btn">
                   View Full Project →

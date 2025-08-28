@@ -3,9 +3,10 @@ interface Props {
   src: string;
   alt: string;
   title?: string;
+  description?: string;
 }
 
-const { src, alt, title } = Astro.props;
+const { src, alt, title, description } = Astro.props;
 
 // Determine media type from file extension
 function getMediaType(url: string): "image" | "video" | "unknown" {
@@ -32,6 +33,7 @@ const mediaType = getMediaType(src);
     mediaType === "image" && (
       <div class="image-container">
         <img src={src} alt={alt} loading="lazy" />
+        {description ? <p class="media-description">{description}</p> : null}
       </div>
     )
   }
@@ -56,6 +58,7 @@ const mediaType = getMediaType(src);
             </a>
           </p>
         </video>
+        {description ? <p class="media-description">{description}</p> : null}
         <button class="sound-toggle" aria-label="Toggle sound">
           <div class="sound-toggle-bg" />
           <svg
@@ -131,10 +134,12 @@ const mediaType = getMediaType(src);
     cursor: pointer;
   }
 
-  .video-container video {
+  .video-container video,
+  .image-container img {
     width: 100%;
     height: auto;
     display: block;
+    object-fit: contain;
     aspect-ratio: 16 / 9;
   }
 
@@ -235,6 +240,14 @@ const mediaType = getMediaType(src);
 
   .media-link:hover {
     background: var(--accent-dark);
+  }
+
+  .media-description {
+    padding: 0.75rem 1rem;
+    margin: 0;
+    color: var(--gray-dark);
+    font-size: 0.95rem;
+    line-height: 1.4;
   }
 
   /* Responsive design */

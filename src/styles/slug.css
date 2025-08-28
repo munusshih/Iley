@@ -1,12 +1,19 @@
-.project-detail {
+/* .project-detail {
     width: 75%;
     float: right;
-}
+} */
 
 .project-header {
     padding: 0;
     margin-top: 1rem;
     align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 5rem;
+}
+
+.project-header>* {
+    width: 100%;
+    text-align: left;
 }
 
 .project-title {
@@ -35,10 +42,6 @@
     color: #aaa;
 }
 
-.project-detail .project-meta .year::before {
-    content: ", ";
-}
-
 .project-thumbnail img {
     width: 100%;
     height: auto;
@@ -52,16 +55,10 @@
 }
 
 .short-description {
-    font-size: 1rem;
+    font-size: 1.25rem;
     margin-bottom: 2rem;
-    color: var(--gray-dark);
-    text-align: center;
-}
-
-.description,
-.credit,
-.hero-moment {
-    margin-bottom: 2rem;
+    color: #aaa;
+    line-height: 1.25;
 }
 
 .description h3,

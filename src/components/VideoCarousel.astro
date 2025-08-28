@@ -1,55 +1,158 @@
 ---
-import { readdir } from "fs/promises";
+import { readdir, readFile } from "fs/promises";
+import { existsSync } from "fs";
 import path from "path";
 
-// Get all video files from public/videos directory
-const videosDir = path.join(process.cwd(), "public", "videos");
-let videoFiles: string[] = [];
+// Prefer homepage-local.json (generated at build-time). Fallback to public/videos.
+const homepageJson = path.join(
+  process.cwd(),
+  "src",
+  "data",
+  "homepage-local.json"
+);
+// Store objects { src, client, type }
+type MediaItem = { src: string; client?: string; type: "video" | "image" };
+let videoItems: Array<MediaItem> = [];
 
-try {
-  const files = await readdir(videosDir);
-  videoFiles = files.filter(
-    (file) =>
-      file.toLowerCase().endsWith(".mp4") ||
-      file.toLowerCase().endsWith(".webm") ||
-      file.toLowerCase().endsWith(".mov")
-  );
-  console.log("Found video files:", videoFiles);
-} catch (error) {
-  console.error("Error reading videos directory:", error);
+if (existsSync(homepageJson)) {
+  try {
+    const raw = await readFile(homepageJson, "utf8");
+    const rows = JSON.parse(raw);
+
+    // For each row, pick the first field that looks like a video or an asset path
+    for (const row of rows) {
+      const values = Object.values(row).filter((v) => typeof v === "string");
+      const match = values.find(
+        (v) =>
+          v.startsWith("/assets/projects/") || /\.(mp4|webm|mov)(\?|$)/i.test(v)
+      );
+      if (match) {
+        const client = row["Client"] || row.client || "";
+        // determine type by extension if possible
+        const isVideo = /\.(mp4|webm|mov)(\?|$)/i.test(match);
+        const isImage = /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(match);
+        const type: "video" | "image" = isImage
+          ? "image"
+          : isVideo
+            ? "video"
+            : "video";
+        videoItems.push({ src: match, client, type });
+      }
+    }
+
+    console.log(
+      "Using homepage-local.json, found videos:",
+      videoItems.map((i) => i.src)
+    );
+  } catch (err) {
+    console.error(
+      "Failed to read homepage-local.json, falling back:",
+      err.message
+    );
+  }
 }
 
-// Duplicate the videos for infinite loop
-const duplicatedVideos = [...videoFiles, ...videoFiles];
+// Fallback: read from public/videos directory
+if (videoItems.length === 0) {
+  const videosDir = path.join(process.cwd(), "public", "videos");
+  try {
+    const files = await readdir(videosDir);
+    videoItems = files
+      .filter(
+        (file) =>
+          file.toLowerCase().endsWith(".mp4") ||
+          file.toLowerCase().endsWith(".webm") ||
+          file.toLowerCase().endsWith(".mov")
+      )
+      .map((f) => ({ src: `/videos/${f}`, client: "" }));
+    console.log(
+      "Found video files in public/videos:",
+      videoItems.map((i) => i.src)
+    );
+  } catch (error) {
+    console.error("Error reading videos directory:", error);
+  }
+}
+
+// Normalize srcs if necessary and keep the type
+videoItems = videoItems.map((it) => {
+  let s = it.src;
+  if (!s.startsWith("/assets/projects/") && !s.startsWith("/videos/")) {
+    if (s.match(/^[^/]+\.(mp4|webm|mov)$/i)) s = `/videos/${s}`;
+    if (s.match(/^[^/]+\.(jpg|jpeg|png|gif|webp)$/i)) s = `/videos/${s}`; // unlikely but keep safe
+  }
+  // If type wasn't accurately set earlier, infer from the normalized path
+  const isVideo = /\.(mp4|webm|mov)(\?|$)/i.test(s);
+  const isImage = /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(s);
+  const type: "video" | "image" = isImage
+    ? "image"
+    : isVideo
+      ? "video"
+      : it.type || "video";
+  return { src: s, client: it.client, type };
+});
+
+// Duplicate the items for infinite loop
+const duplicatedVideos = [...videoItems, ...videoItems];
 ---
 
 <div class="video-carousel">
   <div class="carousel-track">
     {
-      duplicatedVideos.map((video, index) => (
-        <div class="video-slide" key={index}>
-          <video
-            src={`/videos/${video}`}
-            autoplay
-            muted
-            loop
-            playsinline
-            class="carousel-video"
-          >
-            Your browser does not support the video tag.
-          </video>
-          <div class="video-overlay">
-            <h3 class="video-title">
-              {video
-                .replace(/\.[^/.]+$/, "")
-                .replace(/_/g, " ")
-                .replace(/\d+/g, "")
-                .replace(/\s+/g, " ")
-                .trim()}
-            </h3>
+      duplicatedVideos.map((item, index) => {
+        const src = item.src;
+        const base = path.basename(src);
+        const title = base
+          .replace(/\.[^/.]+$/, "")
+          .replace(/_/g, " ")
+          .replace(/\d+/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+
+        return (
+          <div class="video-slide" key={index}>
+            {item.type === "video" ? (
+              <video
+                src={src}
+                autoplay
+                muted
+                loop
+                playsinline
+                class="carousel-video carousel-media"
+              >
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <img
+                src={src}
+                alt={title || item.client || "carousel image"}
+                class="carousel-image carousel-media"
+              />
+            )}
+            <div class="video-overlay">
+              <h3 class="video-title">
+                {item.client ? <p class="video-client">{item.client}</p> : null}
+              </h3>
+            </div>
           </div>
-        </div>
-      ))
+        );
+      })
     }
   </div>
 </div>
+
+<script type="module">
+  // Play all carousel videos at the same time
+  // Only target actual <video> elements
+  const videos = Array.from(
+    document.querySelectorAll(".carousel-media")
+  ).filter((el) => el.tagName && el.tagName.toLowerCase() === "video");
+  videos.forEach((v) => {
+    try {
+      v.muted = true;
+    } catch (e) {}
+    try {
+      v.play();
+    } catch (e) {}
+  });
+</script>
