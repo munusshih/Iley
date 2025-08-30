@@ -1,5 +1,5 @@
-// Lenis smooth scroll only
-import Lenis from "https://unpkg.com/@studio-freight/lenis?module";
+// Lenis smooth scroll only (npm import)
+import Lenis from "lenis";
 
 const lenis = new Lenis({
   duration: 1.2,

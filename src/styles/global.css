@@ -16,6 +16,11 @@
     font-size: 1.15rem;
 }
 
+html {
+    max-width: 1600px;
+    margin: auto;
+}
+
 #homepage main {
     padding-top: 3rem;
     padding-bottom: 7rem;

@@ -38,7 +38,8 @@
     max-height: var(--max-video-height);
 }
 
-.carousel-video {
+.carousel-video,
+.carousel-image {
     max-height: var(--max-video-height);
     width: auto;
     height: auto;
