@@ -23,7 +23,7 @@ html {
 
 #homepage main {
     padding-top: 3rem;
-    padding-bottom: 7rem;
+
     height: auto;
 }
 
@@ -44,7 +44,6 @@ header {
 
 main {
     padding-top: 3rem;
-    padding-bottom: 7rem;
 }
 
 nav {

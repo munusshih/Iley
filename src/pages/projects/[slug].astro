@@ -1,19 +1,23 @@
 ---
 import { getCollection } from "astro:content";
+import NextProjectButton from "../../components/NextProjectButton.astro";
 import BasicLayout from "../../layouts/BasicLayout.astro";
 import MediaViewer from "../../components/MediaViewer.astro";
 
 export async function getStaticPaths() {
   const projects = await getCollection("projects");
-  return projects.map((project) => {
+  return projects.map((project, idx) => {
+    // Compute next project's index (wrap to first if last)
+    const nextIdx = (idx + 1) % projects.length;
+    const nextProject = projects[nextIdx];
     return {
       params: { slug: project.id },
-      props: { project },
+      props: { project, nextProject },
     };
   });
 }
 
-const { project } = Astro.props;
+const { project, nextProject } = Astro.props;
 ---
 
 <BasicLayout
@@ -123,10 +127,7 @@ const { project } = Astro.props;
           }
         </div>
       </div>
-
-      <nav class="project-nav">
-        <a href="/projects">← Back to Projects</a>
-      </nav>
     </article>
+    <NextProjectButton nextProject={nextProject} />
   </main>
 </BasicLayout>
