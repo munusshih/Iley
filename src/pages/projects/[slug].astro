@@ -48,6 +48,11 @@ const { project } = Astro.props;
 
         <div class="right-column">
           <p class="short-description">{project.data.shortDescription}</p>
+          {
+            project.data.role && (
+              <p class="short-description">Role: {project.data.role}</p>
+            )
+          }
         </div>
       </header>
 

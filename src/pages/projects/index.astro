@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import BasicLayout from "../../layouts/BasicLayout.astro";
 import MediaViewer from "../../components/MediaViewer.astro";
+import { SITE_DESCRIPTION, SITE_TITLE } from "../../consts";
 
 let projects = [];
 try {
@@ -13,10 +14,7 @@ try {
 }
 ---
 
-<BasicLayout
-  title="Projects"
-  description="Portfolio projects from Google Sheets"
->
+<BasicLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
   <main>
     <h1 class="big-title">Selected Projects</h1>
     <div class="projects-grid">
@@ -37,7 +35,7 @@ try {
                   {project.data.projectName}
                   <span class="year">, {project.data.year}</span>
                 </h2>
-                <p class="description">{project.data.shortDescription}</p>
+                {/* <p class="description">{project.data.shortDescription}</p> */}
                 {/* <div class="project-actions">
                 <a href={`/projects/${project.id}`} class="view-project-btn">
                   View Full Project →

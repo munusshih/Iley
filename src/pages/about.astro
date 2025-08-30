@@ -1,0 +1,62 @@
+---
+import { getCollection } from "astro:content";
+import BasicLayout from "../layouts/BasicLayout.astro";
+import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
+---
+
+<BasicLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
+  <main>
+    <h1 class="big-title">About Iley</h1>
+    <div class="about-container grid grid-cols-2">
+      <img src="img/profile.jpg" alt="Iley Cao" class="profile-image" />
+      <div class="bio">
+        <div class="flex flex-col mb-8 font-serif">
+          <a href="mailto:your@email.com">Email</a>
+          <a href="https://www.linkedin.com/in/iley-cao/">Linkedin</a>
+          <a href="https://www.instagram.com/iley.c/">Instagram</a>
+        </div>
+        <p class="short-description">
+          I’m a social art director and multimedia designer that specializes in
+          video, world-building, and visual storytelling. My work blends
+          strategy, creative direction, and content creation to craft
+          scroll-stopping social and digital campaigns that drive engagement and
+          elevate brand presence.
+        </p>
+        <p class="short-description">
+          With a background in both design and strategy, I create visually
+          compelling content that aligns with marketing goals while resonating
+          with audiences. From concept to execution—I bring ideas to life across
+          platforms.
+        </p>
+        <p class="short-description">
+          In this ever changing digital landscape, I know how to pivot quickly,
+          adapt to trends, and execute with intention and impact. I’m energized
+          by environments where creativity moves at the speed of culture, and
+          the occasional matcha latte.
+        </p>
+
+        <div class="mt-20">
+          <h2>Selected Clients</h2>
+          <ul class="opacity-40">
+            <li>Milk Makeup</li>
+            <li>Eadem</li>
+            <li>PBs</li>
+            <li>Glow Recipe</li>
+            <li>Dawang NEW YORK</li>
+            <li>Edie Parker</li>
+            <li>Def Jam Recordings</li>
+          </ul>
+        </div>
+
+        <div class="mt-8">
+          <h2>Services</h2>
+          <ul class="opacity-40">
+            <li>Service 1</li>
+            <li>Service 2</li>
+            <li>Service 3</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+</BasicLayout>

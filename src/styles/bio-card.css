@@ -23,8 +23,14 @@
 #rotating-text {
     font-weight: 100 !important;
     opacity: 0.9;
+    font-family: "Alegreya", serif;
+    font-style: italic;
 }
 
 .rotating-text::after {
     content: ".";
+}
+
+.profile-image{
+    max-height: 1200px;
 }

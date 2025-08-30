@@ -2,11 +2,11 @@
 @import "./project.css";
 @import "./slug.css";
 @import "./bio-card.css";
+@import "./footer.css";
+@import 'tailwindcss';
 
 * {
     font-family: "Radio Canada Big", sans-serif;
-    margin: 0;
-    padding: 0;
     box-sizing: border-box;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -17,7 +17,7 @@
 }
 
 html {
-    max-width: 1600px;
+    max-width: 2400px;
     margin: auto;
 }
 
@@ -36,7 +36,6 @@ header {
 }
 
 #site-navigation {
-    position: fixed;
     top: 0;
     z-index: 100;
     width: 100%;
@@ -44,21 +43,13 @@ header {
 }
 
 main {
-    padding-top: 10rem;
-    padding-bottom: 10rem;
+    padding-top: 3rem;
+    padding-bottom: 7rem;
 }
 
 nav {
     display: flex;
     gap: 1.5rem;
-    opacity: 0.5;
-}
-
-footer {
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 1rem;
     opacity: 0.5;
 }
 
@@ -88,4 +79,13 @@ footer {
 html,
 body {
     overflow-x: hidden;
+}
+
+a {
+    transition: opacity 0.2s ease;
+}
+
+a:hover {
+    transition: opacity 0.2s ease;
+    opacity: 0.6;
 }
