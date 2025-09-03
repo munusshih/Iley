@@ -1,7 +1,109 @@
 ---
 import { readdir, readFile } from "fs/promises";
 import { existsSync } from "fs";
+import * as fs from "fs";
 import path from "path";
+import { getCollection } from "astro:content";
+
+// Get all projects to match with carousel items
+const projects = await getCollection("projects");
+
+// Helper function to create slug from project name
+function createSlug(projectName: string): string {
+  return projectName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+// Configuration mapping for project names to actual slugs
+const PROJECT_NAME_TO_SLUG_MAP: Record<string, string> = {
+  "Adobe": "adobe",
+  "Milk Makeup - Jelly Tint": "milk-makeup-jelly-tint", 
+  "EADEM": "eadem",
+  "Edie Parker": "edie-parker",
+  "Ally Teo": "ally-teo",
+  "Milk Makeup - Editorial Videos": "milk-makeup-editorial-videos",
+  "Milk Makeup Organic Social": "milk-makeup-organic-social",
+  // Add more mappings as needed
+};
+
+// Helper function to get proper project slug from project name
+function getProjectSlug(projectName: string): string | null {
+  if (!projectName) return null;
+  
+  // First check the mapping
+  const mappedSlug = PROJECT_NAME_TO_SLUG_MAP[projectName];
+  if (mappedSlug) {
+    return mappedSlug;
+  }
+  
+  // Fallback to auto-generated slug
+  return createSlug(projectName);
+}
+
+// Helper function to create project link from slug
+function createProjectLink(projectSlug: string): string | null {
+  if (!projectSlug) return null;
+  
+  // Clean the slug and ensure it starts with /projects/
+  const cleanSlug = projectSlug.trim();
+  if (cleanSlug.startsWith('/projects/')) {
+    return cleanSlug;
+  } else if (cleanSlug.startsWith('projects/')) {
+    return `/${cleanSlug}`;
+  } else {
+    return `/projects/${cleanSlug}`;
+  }
+}
+
+// Helper function to find matching project by client name
+function findMatchingProject(clientName: string): string | null {
+  if (!clientName) return null;
+  
+  // Load projects and try to match by client name
+  try {
+    const projectsPath = path.join(process.cwd(), "src", "data", "projects.json");
+    if (existsSync(projectsPath)) {
+      const projectsData = JSON.parse(fs.readFileSync(projectsPath, "utf8"));
+      
+      const clientLower = clientName.toLowerCase();
+      
+      // Try different matching strategies
+      for (const project of projectsData) {
+        const projectNameLower = project.projectName?.toLowerCase() || "";
+        
+        // Direct match
+        if (projectNameLower === clientLower) {
+          return createSlug(project.projectName);
+        }
+        
+        // Check if client name contains project name or vice versa
+        if (clientLower.includes(projectNameLower) || projectNameLower.includes(clientLower)) {
+          return createSlug(project.projectName);
+        }
+        
+        // Special cases for known mappings
+        if (clientLower === "milk" && projectNameLower.includes("milk")) {
+          return createSlug(project.projectName);
+        }
+        if (clientLower === "eadem" && projectNameLower === "eadem") {
+          return createSlug(project.projectName);
+        }
+        if (clientLower === "edie parker" && projectNameLower.includes("edie")) {
+          return createSlug(project.projectName);
+        }
+        if (clientLower === "adobe" && projectNameLower === "adobe") {
+          return createSlug(project.projectName);
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error loading projects for client matching:", error);
+  }
+  
+  return null;
+}
 
 // Prefer homepage-local.json (generated at build-time). Fallback to public/videos.
 const homepageJson = path.join(
@@ -10,8 +112,8 @@ const homepageJson = path.join(
   "data",
   "homepage-local.json"
 );
-// Store objects { src, client, type }
-type MediaItem = { src: string; client?: string; type: "video" | "image" };
+// Store objects { src, client, type, projectLink }
+type MediaItem = { src: string; client?: string; type: "video" | "image"; projectLink?: string | null };
 let videoItems: Array<MediaItem> = [];
 
 if (existsSync(homepageJson)) {
@@ -28,6 +130,21 @@ if (existsSync(homepageJson)) {
       );
       if (match) {
         const client = row["Client"] || row.client || "";
+        const projectName = row["Project"] || row.project || "";
+        
+        // Convert project name to proper slug
+        let projectLink = null;
+        if (projectName) {
+          const slug = getProjectSlug(projectName);
+          projectLink = createProjectLink(slug);
+        }
+        
+        // If no project name in sheet, try fallback client matching
+        if (!projectLink) {
+          const matchedSlug = findMatchingProject(client);
+          projectLink = createProjectLink(matchedSlug);
+        }
+        
         // determine type by extension if possible
         const isVideo = /\.(mp4|webm|mov)(\?|$)/i.test(match);
         const isImage = /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(match);
@@ -36,13 +153,13 @@ if (existsSync(homepageJson)) {
           : isVideo
             ? "video"
             : "video";
-        videoItems.push({ src: match, client, type });
+        videoItems.push({ src: match, client, type, projectLink });
       }
     }
 
     console.log(
       "Using homepage-local.json, found videos:",
-      videoItems.map((i) => i.src)
+      videoItems.map((i) => ({ src: i.src, client: i.client, projectLink: i.projectLink }))
     );
   } catch (err) {
     console.error(
@@ -64,7 +181,7 @@ if (videoItems.length === 0) {
           file.toLowerCase().endsWith(".webm") ||
           file.toLowerCase().endsWith(".mov")
       )
-      .map((f) => ({ src: `/videos/${f}`, client: "" }));
+      .map((f) => ({ src: `/videos/${f}`, client: "", projectLink: null }));
     console.log(
       "Found video files in public/videos:",
       videoItems.map((i) => i.src)
@@ -89,7 +206,7 @@ videoItems = videoItems.map((it) => {
     : isVideo
       ? "video"
       : it.type || "video";
-  return { src: s, client: it.client, type };
+  return { src: s, client: it.client, type, projectLink: it.projectLink };
 });
 
 // Duplicate the items for infinite loop
@@ -111,35 +228,89 @@ const duplicatedVideos = [...videoItems, ...videoItems];
 
         return (
           <div class="video-slide" key={index}>
-            {item.type === "video" ? (
-              <video
-                src={src}
-                autoplay
-                muted
-                loop
-                playsinline
-                class="carousel-video carousel-media"
-              >
-                Your browser does not support the video tag.
-              </video>
+            {item.projectLink ? (
+              <a href={item.projectLink} class="carousel-link">
+                {item.type === "video" ? (
+                  <video
+                    src={src}
+                    autoplay
+                    muted
+                    loop
+                    playsinline
+                    class="carousel-video carousel-media"
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                ) : (
+                  <img
+                    src={src}
+                    alt={title || item.client || "carousel image"}
+                    class="carousel-image carousel-media"
+                  />
+                )}
+                <div class="video-overlay">
+                  <h3 class="video-title">
+                    {item.client ? <p class="video-client">{item.client}</p> : null}
+                  </h3>
+                </div>
+              </a>
             ) : (
-              <img
-                src={src}
-                alt={title || item.client || "carousel image"}
-                class="carousel-image carousel-media"
-              />
+              <>
+                {item.type === "video" ? (
+                  <video
+                    src={src}
+                    autoplay
+                    muted
+                    loop
+                    playsinline
+                    class="carousel-video carousel-media"
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                ) : (
+                  <img
+                    src={src}
+                    alt={title || item.client || "carousel image"}
+                    class="carousel-image carousel-media"
+                  />
+                )}
+                <div class="video-overlay">
+                  <h3 class="video-title">
+                    {item.client ? <p class="video-client">{item.client}</p> : null}
+                  </h3>
+                </div>
+              </>
             )}
-            <div class="video-overlay">
-              <h3 class="video-title">
-                {item.client ? <p class="video-client">{item.client}</p> : null}
-              </h3>
-            </div>
           </div>
         );
       })
     }
   </div>
 </div>
+
+<style>
+  .carousel-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .carousel-link:hover .video-overlay {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.7);
+  }
+  
+  .carousel-link .carousel-media {
+    transition: transform 0.3s ease;
+  }
+  
+  .carousel-link:hover .carousel-media {
+    transform: scale(1.05);
+  }
+</style>
 
 <script type="module">
   // Play all carousel videos at the same time

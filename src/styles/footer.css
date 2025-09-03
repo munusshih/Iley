@@ -7,7 +7,7 @@ footer {
     color: white;
 
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 1rem;
 }
 
@@ -15,8 +15,13 @@ footer * {
     color: white;
 }
 
+footer>div:first-of-type {
+    @apply col-span-2;
+}
+
 footer .big-title {
     font-size: 3rem;
+    padding: 0;
 }
 
 footer .credit {
@@ -36,6 +41,7 @@ footer ul {
 
 footer ul li {
     margin-bottom: 0.5rem;
+
 }
 
 footer ul li a {

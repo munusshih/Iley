@@ -7,8 +7,8 @@
     padding: 0;
     margin-top: 1rem;
     align-items: flex-start;
-    gap: 1rem;
     margin-bottom: 5rem;
+    @apply px-4 gap-8 md:gap-24;
 }
 
 .project-header>* {
@@ -55,7 +55,7 @@
 }
 
 .short-description {
-    font-size: 1.25rem;
+    font-size: 1rem;
     margin-bottom: 2rem;
     color: #aaa;
     line-height: 1.25;
@@ -73,6 +73,7 @@
 
 .media-gallery {
     margin-bottom: 2rem;
+    @apply p-4;
 }
 
 .media-grid {

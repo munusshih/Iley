@@ -48,15 +48,16 @@ const { project, nextProject } = Astro.props;
             <span class="category">{project.data.categories}</span>
             <span class="year">{project.data.year}</span>
           </div>
+
+          {
+            project.data.role && (
+              <div class="role">Role: {project.data.role}</div>
+            )
+          }
         </div>
 
         <div class="right-column">
           <p class="short-description">{project.data.shortDescription}</p>
-          {
-            project.data.role && (
-              <p class="short-description">Role: {project.data.role}</p>
-            )
-          }
         </div>
       </header>
 
@@ -86,6 +87,7 @@ const { project, nextProject } = Astro.props;
                 src={project.data.workImage1}
                 alt={`${project.data.projectName} work sample 1`}
                 title="Work Sample 1"
+                description={project.data.workImage1Description}
               />
             )
           }
@@ -95,6 +97,7 @@ const { project, nextProject } = Astro.props;
                 src={project.data.workImage2}
                 alt={`${project.data.projectName} work sample 2`}
                 title="Work Sample 2"
+                description={project.data.workImage2Description}
               />
             )
           }
@@ -104,6 +107,7 @@ const { project, nextProject } = Astro.props;
                 src={project.data.workImage3}
                 alt={`${project.data.projectName} work sample 3`}
                 title="Work Sample 3"
+                description={project.data.workImage3Description}
               />
             )
           }
@@ -113,6 +117,7 @@ const { project, nextProject } = Astro.props;
                 src={project.data.workImage4}
                 alt={`${project.data.projectName} work sample 4`}
                 title="Work Sample 4"
+                description={project.data.workImage4Description}
               />
             )
           }
@@ -122,6 +127,57 @@ const { project, nextProject } = Astro.props;
                 src={project.data.workImage5}
                 alt={`${project.data.projectName} work sample 5`}
                 title="Work Sample 5"
+                description={project.data.workImage5Description}
+              />
+            )
+          }
+          {
+            project.data.workImage6 && (
+              <MediaViewer
+                src={project.data.workImage6}
+                alt={`${project.data.projectName} work sample 6`}
+                title="Work Sample 6"
+                description={project.data.workImage6Description}
+              />
+            )
+          }
+          {
+            project.data.workImage7 && (
+              <MediaViewer
+                src={project.data.workImage7}
+                alt={`${project.data.projectName} work sample 7`}
+                title="Work Sample 7"
+                description={project.data.workImage7Description}
+              />
+            )
+          }
+          {
+            project.data.workImage8 && (
+              <MediaViewer
+                src={project.data.workImage8}
+                alt={`${project.data.projectName} work sample 8`}
+                title="Work Sample 8"
+                description={project.data.workImage8Description}
+              />
+            )
+          }
+          {
+            project.data.workImage9 && (
+              <MediaViewer
+                src={project.data.workImage9}
+                alt={`${project.data.projectName} work sample 9`}
+                title="Work Sample 9"
+                description={project.data.workImage9Description}
+              />
+            )
+          }
+          {
+            project.data.workImage10 && (
+              <MediaViewer
+                src={project.data.workImage10}
+                alt={`${project.data.projectName} work sample 10`}
+                title="Work Sample 10"
+                description={project.data.workImage10Description}
               />
             )
           }

@@ -426,26 +426,59 @@ async function fetchProjectData() {
     workImage1Description:
       row["Work Image/Video 1 Description"] ||
       row["Work Image 1 Description"] ||
+      row["Description1 (Optional)"] ||
       "",
     workImage2: row["Work Image/Video 2"] || "",
     workImage2Description:
       row["Work Image/Video 2 Description"] ||
       row["Work Image 2 Description"] ||
+      row["Description2 (Optional)"] ||
       "",
     workImage3: row["Work Image/Video 3"] || "",
     workImage3Description:
       row["Work Image/Video 3 Description"] ||
       row["Work Image 3 Description"] ||
+      row["Description3 (Optional)"] ||
       "",
     workImage4: row["Work Image/Video 4"] || "",
     workImage4Description:
       row["Work Image/Video 4 Description"] ||
       row["Work Image 4 Description"] ||
+      row["Description4 (Optional)"] ||
       "",
     workImage5: row["Work Image/Video 5"] || "",
     workImage5Description:
       row["Work Image/Video 5 Description"] ||
       row["Work Image 5 Description"] ||
+      row["Description5 (Optional)"] ||
+      "",
+    workImage6: row["Work Image/Video 6"] || "",
+    workImage6Description:
+      row["Work Image/Video 6 Description"] ||
+      row["Work Image 6 Description"] ||
+      row["Description6 (Optional)"] ||
+      "",
+    workImage7: row["Work Image/Video 7"] || "",
+    workImage7Description:
+      row["Work Image/Video 7 Description"] ||
+      row["Work Image 7 Description"] ||
+      row["Description7 (Optional)"] ||
+      "",
+    workImage8: row["Work Image/Video 8"] || "",
+    workImage8Description:
+      row["Work Image/Video 8 Description"] ||
+      row["Work Image 8 Description"] ||
+      row["Description8 (Optional)"] ||
+      "",
+    workImage9: row["Work Image/Video 9"] || "",
+    workImage9Description:
+      row["Work Image/Video 9 Description"] ||
+      row["Work Image 9 Description"] ||
+      "",
+    workImage10: row["Work Image/Video 10"] || "",
+    workImage10Description:
+      row["Work Image/Video 10 Description"] ||
+      row["Work Image 10 Description"] ||
       "",
   }));
 }
@@ -562,6 +595,11 @@ async function syncFilenames(projects) {
       "workImage3",
       "workImage4",
       "workImage5",
+      "workImage6",
+      "workImage7",
+      "workImage8",
+      "workImage9",
+      "workImage10",
     ];
 
     for (const field of mediaFields) {
@@ -625,6 +663,11 @@ async function processAssets() {
         "workImage3",
         "workImage4",
         "workImage5",
+        "workImage6",
+        "workImage7",
+        "workImage8",
+        "workImage9",
+        "workImage10",
       ];
 
       for (const field of mediaFields) {

@@ -8,9 +8,34 @@ interface Props {
 
 const { src, alt, title, description } = Astro.props;
 
-// Determine media type from file extension
-function getMediaType(url: string): "image" | "video" | "unknown" {
+// Extract YouTube video ID from URL
+function getYouTubeVideoId(url: string): string | null {
+  if (!url) return null;
+
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+    /youtube\.com\/v\/([^&\n?#]+)/,
+    /youtube\.com\/shorts\/([^&\n?#]+)/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  return null;
+}
+
+// Determine media type from file extension or URL
+function getMediaType(url: string): "image" | "video" | "youtube" | "unknown" {
   if (!url) return "unknown";
+
+  // Check if it's a YouTube URL first
+  if (getYouTubeVideoId(url)) {
+    return "youtube";
+  }
 
   const extension = url.split(".").pop()?.toLowerCase();
 
@@ -24,6 +49,7 @@ function getMediaType(url: string): "image" | "video" | "unknown" {
 }
 
 const mediaType = getMediaType(src);
+const youtubeVideoId = mediaType === "youtube" ? getYouTubeVideoId(src) : null;
 ---
 
 <div class="media-viewer">
@@ -58,7 +84,11 @@ const mediaType = getMediaType(src);
             </a>
           </p>
         </video>
-        {description ? <p class="media-description">{description}</p> : null}
+        {description && (
+          <div class="video-description-overlay">
+            <p class="media-description-overlay">{description}</p>
+          </div>
+        )}
         <button class="sound-toggle" aria-label="Toggle sound">
           <div class="sound-toggle-bg" />
           <svg
@@ -82,6 +112,24 @@ const mediaType = getMediaType(src);
             <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
           </svg>
         </button>
+      </div>
+    )
+  }
+
+  {
+    mediaType === "youtube" && youtubeVideoId && (
+      <div class="youtube-container">
+        <iframe
+          src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=0&mute=0&loop=0&controls=1&modestbranding=1&rel=0`}
+          title={alt || "YouTube video"}
+          width="100%"
+          height="100%"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          loading="lazy"
+        />
+        {description ? <p class="media-description">{description}</p> : null}
       </div>
     )
   }
@@ -124,6 +172,7 @@ const mediaType = getMediaType(src);
 
   .image-container,
   .video-container,
+  .youtube-container,
   .fallback-container {
     position: relative;
     width: 100%;
@@ -134,13 +183,30 @@ const mediaType = getMediaType(src);
     cursor: pointer;
   }
 
+  .youtube-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+  }
+
+  .youtube-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
   .video-container video,
   .image-container img {
     width: 100%;
     height: auto;
     display: block;
     object-fit: contain;
-    aspect-ratio: 16 / 9;
+    max-height: 150vh;
   }
 
   .sound-toggle {
@@ -222,6 +288,13 @@ const mediaType = getMediaType(src);
     opacity: 1;
   }
 
+  .media-description-overlay {
+    margin: 0;
+    color: #aaa;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
   .fallback-container {
     padding: 2rem;
     text-align: center;
@@ -252,9 +325,8 @@ const mediaType = getMediaType(src);
 
   /* Responsive design */
   @media (max-width: 768px) {
-    .image-container img,
-    .video-container video {
-      max-height: 250px;
+    .youtube-container {
+      padding-bottom: 56.25%; /* Maintain 16:9 aspect ratio on mobile */
     }
 
     .media-title {
@@ -270,6 +342,24 @@ const mediaType = getMediaType(src);
     .sound-icon {
       width: 48px;
       height: 48px;
+    }
+
+    .video-description-overlay {
+      padding: 1.5rem 0.75rem 0.75rem;
+    }
+
+    .media-description-overlay {
+      font-size: 0.8rem;
+    }
+
+    /* Show overlay by default on mobile since hover doesn't work well */
+    .video-description-overlay {
+      opacity: 1;
+    }
+
+    /* Remove aspect-ratio constraint for videos on mobile to allow natural height */
+    .video-container video {
+      aspect-ratio: unset;
     }
   }
 </style>

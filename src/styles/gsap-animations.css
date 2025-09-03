@@ -1,0 +1,171 @@
+/* GSAP Animation Base Styles */
+
+/* Custom Cursor Styles */
+.custom-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    border: 1px solid #ffffff;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 999999;
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(2px);
+    transform: translate(-50%, -50%);
+    transition: none;
+}
+
+.custom-cursor-inner {
+    width: 6px;
+    height: 6px;
+    background: #ffffff;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Hide default cursor globally */
+* {
+    cursor: none !important;
+}
+
+/* Ensure text elements never move position */
+.project-meta,
+.role,
+.credit,
+.short-description,
+.project-title h1 {
+    opacity: 1 !important;
+    transform: none !important;
+    will-change: opacity;
+    /* Only allow opacity changes */
+}
+
+/* Elements that can be animated with transforms */
+.media-viewer,
+.video-slide {
+    opacity: 1;
+    will-change: transform, opacity;
+}
+
+/* Enhance transform performance */
+.media-viewer,
+.next-project-button,
+.sound-toggle,
+.video-description-overlay {
+    transform: translateZ(0);
+    /* Enable hardware acceleration */
+    backface-visibility: hidden;
+}
+
+/* Smooth hover transitions for elements not handled by GSAP */
+.media-viewer {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Enhanced cursor states */
+.media-viewer:hover {
+    cursor: pointer;
+}
+
+.next-project-button:hover {
+    cursor: pointer;
+}
+
+/* Smooth text animations */
+.project-title h1 {
+    overflow: hidden;
+}
+
+/* Video overlay enhancements */
+.video-description-overlay {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Improved mobile performance */
+@media (max-width: 768px) {
+
+    /* Reduce animations on mobile for performance */
+    .media-viewer {
+        will-change: auto;
+    }
+
+    /* Ensure overlays are visible on mobile */
+    .video-description-overlay {
+        opacity: 1 !important;
+    }
+}
+
+/* Loading state styles */
+.gsap-loading {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Animation debugging (remove in production) */
+.gsap-debug {
+    outline: 2px solid red !important;
+}
+
+/* Enhance project navigation button */
+.next-project-button {
+    overflow: hidden;
+    position: relative;
+}
+
+.next-project-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent);
+    transition: left 0.6s ease;
+}
+
+.next-project-button:hover::before {
+    left: 100%;
+}
+
+/* Scroll indicator for long content */
+.project-detail {
+    position: relative;
+}
+
+/* Enhanced focus states for accessibility */
+.sound-toggle:focus {
+    outline: 3px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 4px;
+}
+
+.next-project-button:focus {
+    outline: 2px solid var(--accent, #007acc);
+    outline-offset: 4px;
+}
+
+/* Subtle animations for interactive elements */
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}

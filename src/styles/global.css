@@ -4,6 +4,7 @@
 @import "./bio-card.css";
 @import "./footer.css";
 @import 'tailwindcss';
+@import './gsap-animations.css';
 
 * {
     font-family: "Radio Canada Big", sans-serif;
@@ -22,7 +23,7 @@ html {
 }
 
 #homepage main {
-    padding-top: 3rem;
+    padding-top: 5rem;
 
     height: auto;
 }
@@ -39,17 +40,11 @@ header {
     top: 0;
     z-index: 100;
     width: 100%;
-    background: #fff;
-}
-
-main {
-    padding-top: 3rem;
 }
 
 nav {
     display: flex;
     gap: 1.5rem;
-    opacity: 0.5;
 }
 
 @media screen and (max-width: 768px) {
@@ -72,6 +67,7 @@ nav {
     footer {
         position: relative;
         margin-top: 2rem;
+        @apply grid-cols-1;
     }
 }
 
@@ -86,5 +82,4 @@ a {
 
 a:hover {
     transition: opacity 0.2s ease;
-    opacity: 0.6;
 }

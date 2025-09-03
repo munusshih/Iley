@@ -1,7 +1,14 @@
 main {
-    padding: 1rem;
-    padding-bottom: 0;
     margin: 0 auto;
+}
+
+main>h1:first-of-type {
+    margin-bottom: 2rem;
+    @apply text-8xl;
+}
+
+.projects-grid {
+    @apply grid md:grid-cols-2;
 }
 
 .big-title {
@@ -14,12 +21,7 @@ main {
     font-family: "Alegreya", serif;
     letter-spacing: -0.05em;
     line-height: 1;
-}
-
-.projects-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    @apply md:px-4;
 }
 
 .project-title {
@@ -31,19 +33,34 @@ main {
 
 .project-title h1 {
     text-wrap: balance;
-    line-height: 1.25;
+    line-height: 1;
 }
 
 .project-card {
     background: var(--gray-light);
     overflow: hidden;
-    transition:
-        transform 0.3s ease,
-        box-shadow 0.3s ease;
+    transition: all 0.3s ease;
+    @apply border-t border-r p-4;
+}
+
+.project-card:nth-last-of-type(-n+2) {
+    @apply border-b;
 }
 
 .project-card:hover {
-    transform: translateY(-5px);
+    @apply bg-[beige];
+}
+
+.project-detail .project-thumbnail {
+    @apply flex items-center justify-center;
+}
+
+.project-detail>.project-thumbnail .media-viewer .image-container img {
+    @apply object-cover;
+}
+
+.project-detail .project-thumbnail .media-viewer {
+    @apply w-full h-full;
 }
 
 .project-thumbnail {
@@ -97,11 +114,6 @@ main {
     transition: opacity 0.3s ease;
 }
 
-
-.project-card:hover .description {
-    opacity: .6;
-}
-
 .extra-description {
     font-style: italic;
     color: var(--gray-dark);
@@ -112,6 +124,15 @@ main {
     font-size: 0.9rem;
     color: var(--gray-dark);
     margin-bottom: 1rem;
+}
+
+.project-header .role {
+    font-size: 1rem;
+    color: black;
+    display: inline-block;
+    width: 100%;
+    line-height: 1.25;
+    @apply mt-8 max-w-[60ch] text-balance;
 }
 
 .project-actions {
@@ -131,9 +152,20 @@ main {
 }
 
 .next-project-card h2 {
-    font-size: 2rem;
+    @apply text-2xl md:text-4xl;
 }
 
 .next-project-pre {
     opacity: 0.5;
+}
+
+.video-description-overlay {
+    bottom: 0;
+    left: calc(50% + 300px);
+    padding: 1rem;
+    max-width: 20ch;
+    text-wrap: balance;
+    background: #000;
+    z-index: 5;
+    @apply md:absolute;
 }
