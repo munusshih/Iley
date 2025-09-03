@@ -14,6 +14,7 @@
     z-index: -1;
     display: flex;
     align-items: center;
+    padding-bottom: 8rem;
 }
 
 .carousel-track {
@@ -38,7 +39,8 @@
     max-height: var(--max-video-height);
 }
 
-.carousel-video {
+.carousel-video,
+.carousel-image {
     max-height: var(--max-video-height);
     width: auto;
     height: auto;

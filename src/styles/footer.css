@@ -1,0 +1,54 @@
+footer {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    background: black;
+    color: white;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 1rem;
+}
+
+footer * {
+    color: white;
+}
+
+footer>div:first-of-type {
+    @apply col-span-2;
+}
+
+footer .big-title {
+    font-size: 3rem;
+    padding: 0;
+}
+
+footer .credit {
+    margin-top: 1rem;
+}
+
+footer .credit,
+footer .credit a {
+    font-size: .8rem;
+    color: #aaa;
+}
+
+footer ul {
+    list-style: none;
+    padding: 0;
+}
+
+footer ul li {
+    margin-bottom: 0.5rem;
+
+}
+
+footer ul li a {
+    color: #aaa;
+    transition: color 0.3s ease;
+}
+
+footer ul li a:hover {
+    color: white;
+}

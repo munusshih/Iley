@@ -1,0 +1,44 @@
+---
+export interface Props {
+  nextProject: any;
+}
+const { nextProject } = Astro.props;
+
+// normalize if passed an Astro collection entry (has .data)
+const np =
+  nextProject && nextProject.data
+    ? {
+        id: nextProject.id,
+        projectName:
+          nextProject.data.projectName ||
+          nextProject.data.title ||
+          nextProject.id,
+        thumbnailImage:
+          nextProject.data.thumbnailImage || nextProject.data.thumbnail || null,
+        shortDescription:
+          nextProject.data.shortDescription ||
+          nextProject.data.description ||
+          "",
+      }
+    : nextProject || null;
+---
+
+{
+  np ? (
+    <div class="w-full overflow-hidden p-4 pb-10">
+      <a href={`/projects/${np.id}`} class="next-project-card ">
+        <h2 class="next-project-pre text-right">Next Project ➔</h2>
+        <div class="project-title text-right">
+          <h2>{np.projectName}</h2>
+        </div>
+        {/* {np.thumbnailImage && (
+          <img
+            src={np.thumbnailImage}
+            alt={np.projectName + " thumbnail"}
+            class="next-project-thumb"
+          />
+        )} */}
+      </a>
+    </div>
+  ) : null
+}

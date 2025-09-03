@@ -1,0 +1,171 @@
+main {
+    margin: 0 auto;
+}
+
+main>h1:first-of-type {
+    margin-bottom: 2rem;
+    @apply text-8xl;
+}
+
+.projects-grid {
+    @apply grid md:grid-cols-2;
+}
+
+.big-title {
+    font-size: 10rem;
+    margin-bottom: .5rem;
+    width: 100%;
+    text-align: left;
+    font-style: italic;
+    font-weight: 100;
+    font-family: "Alegreya", serif;
+    letter-spacing: -0.05em;
+    line-height: 1;
+    @apply md:px-4;
+}
+
+.project-title {
+    font-size: 1.2rem;
+    font-weight: 300;
+    color: var(--gray-light);
+    margin-top: .5rem;
+}
+
+.project-title h1 {
+    text-wrap: balance;
+    line-height: 1;
+}
+
+.project-card {
+    background: var(--gray-light);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    @apply border-t border-r p-4;
+}
+
+.project-card:nth-last-of-type(-n+2) {
+    @apply border-b;
+}
+
+.project-card:hover {
+    @apply bg-[beige];
+}
+
+.project-detail .project-thumbnail {
+    @apply flex items-center justify-center;
+}
+
+.project-detail>.project-thumbnail .media-viewer .image-container img {
+    @apply object-cover;
+}
+
+.project-detail .project-thumbnail .media-viewer {
+    @apply w-full h-full;
+}
+
+.project-thumbnail {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+}
+
+.project-card .project-thumbnail .media-viewer .image-container img {
+    object-fit: cover;
+}
+
+.project-content {
+    padding: 0.5rem 0rem;
+}
+
+.year {
+    background: var(--accent);
+    color: grey;
+    font-size: 1.2rem;
+    margin-left: -0.2em;
+}
+
+.project-card h2 a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.project-card h2 a:hover {
+    color: var(--accent-dark);
+}
+
+.project-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.description,
+.category {
+    font-size: .8rem;
+    color: #333;
+    background: none;
+    font-family: "Alegreya", serif;
+}
+
+.description {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.extra-description {
+    font-style: italic;
+    color: var(--gray-dark);
+    margin-bottom: 1rem;
+}
+
+.credit {
+    font-size: 0.9rem;
+    color: var(--gray-dark);
+    margin-bottom: 1rem;
+}
+
+.project-header .role {
+    font-size: 1rem;
+    color: black;
+    display: inline-block;
+    width: 100%;
+    line-height: 1.25;
+    @apply mt-8 max-w-[60ch] text-balance;
+}
+
+.project-actions {
+    margin-top: 1.5rem;
+}
+
+.view-project-btn {
+    display: inline-block;
+    background: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.view-project-btn:hover {
+    background: var(--accent-dark);
+}
+
+.next-project-card h2 {
+    @apply text-2xl md:text-4xl;
+}
+
+.next-project-pre {
+    opacity: 0.5;
+}
+
+.video-description-overlay {
+    bottom: 0;
+    left: calc(50% + 300px);
+    padding: 1rem;
+    max-width: 20ch;
+    text-wrap: balance;
+    background: #000;
+    z-index: 5;
+    @apply md:absolute;
+}
