@@ -387,6 +387,21 @@ class SiteAnimations {
 
   // Custom circular cursor
   setupCustomCursor() {
+    // Check if it's mobile/touch device - hide cursor completely
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      ) ||
+      window.innerWidth <= 768 ||
+      "ontouchstart" in window;
+
+    if (isMobile) {
+      // On mobile, restore default cursor and don't create custom cursor
+      document.body.style.cursor = "auto";
+      document.documentElement.style.cursor = "auto";
+      return;
+    }
+
     // Create cursor elements
     const cursor = document.createElement("div");
     const cursorInner = document.createElement("div");
@@ -397,34 +412,41 @@ class SiteAnimations {
     cursor.appendChild(cursorInner);
     document.body.appendChild(cursor);
 
-    // Set initial styles to ensure visibility
+    // Set initial styles - start hidden until first mouse move
     gsap.set(cursor, {
-      opacity: 1,
+      opacity: 0,
       scale: 1,
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2,
+      x: -100, // Start off-screen
+      y: -100,
     });
 
-    // Hide default cursor
+    // Hide default cursor only on desktop
     document.body.style.cursor = "none";
     document.documentElement.style.cursor = "none";
 
     // Cursor position tracking
-    let mouseX = window.innerWidth / 2;
-    let mouseY = window.innerHeight / 2;
-    let cursorX = window.innerWidth / 2;
-    let cursorY = window.innerHeight / 2;
+    let mouseX = -100;
+    let mouseY = -100;
+    let cursorX = -100;
+    let cursorY = -100;
+    let hasMouseMoved = false;
 
     // Update mouse position
     document.addEventListener("mousemove", (e) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
+
+      // Show cursor on first mouse move
+      if (!hasMouseMoved) {
+        hasMouseMoved = true;
+        gsap.to(cursor, { opacity: 1, duration: 0.3 });
+      }
     });
 
     // Smooth cursor follow animation
     const updateCursor = () => {
-      cursorX += (mouseX - cursorX) * 0.15;
-      cursorY += (mouseY - cursorY) * 0.15;
+      cursorX += (mouseX - cursorX) * 0.9;
+      cursorY += (mouseY - cursorY) * 0.9;
 
       gsap.set(cursor, {
         x: cursorX,
@@ -477,10 +499,27 @@ class SiteAnimations {
     // Hide cursor when leaving window
     document.addEventListener("mouseleave", () => {
       gsap.to(cursor, { opacity: 0, duration: 0.2 });
+      hasMouseMoved = false;
     });
 
     document.addEventListener("mouseenter", () => {
-      gsap.to(cursor, { opacity: 1, duration: 0.2 });
+      if (hasMouseMoved) {
+        gsap.to(cursor, { opacity: 1, duration: 0.2 });
+      }
+    });
+
+    // Handle window resize - hide cursor on mobile
+    window.addEventListener("resize", () => {
+      const isMobileNow = window.innerWidth <= 768 || "ontouchstart" in window;
+      if (isMobileNow) {
+        gsap.set(cursor, { opacity: 0 });
+        document.body.style.cursor = "auto";
+        document.documentElement.style.cursor = "auto";
+      } else if (hasMouseMoved) {
+        gsap.set(cursor, { opacity: 1 });
+        document.body.style.cursor = "none";
+        document.documentElement.style.cursor = "none";
+      }
     });
   }
 

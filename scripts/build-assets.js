@@ -503,6 +503,43 @@ async function fetchSheetTab(tabName) {
 }
 
 // Process a sheet tab and optionally download media fields (Google Drive links)
+// Special function to process About Page with proper structure
+async function processAboutPage(outputFile) {
+  try {
+    const rows = await fetchSheetTab(ABOUT_PAGE_TAB);
+
+    // Extract about text from first row
+    const firstRow = rows[0] || {};
+    const aboutText = firstRow.About || firstRow.about || "";
+    const photo = firstRow.Photo || firstRow.photo || "";
+
+    // Collect all clients from all rows
+    const clients = rows
+      .map(
+        (row) =>
+          row["Selected Clents"] || row["Selected Clients"] || row.clients || ""
+      )
+      .filter((client) => client.trim() !== "");
+
+    // Create properly structured about page data
+    const aboutPageData = {
+      about: aboutText,
+      photo: photo,
+      selectedClients: clients,
+    };
+
+    // Ensure output directory exists
+    const outDir = path.dirname(outputFile);
+    if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+    fs.writeFileSync(outputFile, JSON.stringify(aboutPageData, null, 2));
+    console.log(`💾 Saved About Page data to: ${outputFile}`);
+    return aboutPageData;
+  } catch (error) {
+    console.error(`❌ Error processing About Page:`, error.message);
+    throw error;
+  }
+}
+
 async function processSheetTab(
   tabName,
   outputFile,
@@ -753,10 +790,8 @@ async function processAssets() {
     }
 
     try {
-      // About Page: just save the JSON, no media downloads
-      await processSheetTab(ABOUT_PAGE_TAB, OUTPUT_ABOUT_FILE, {
-        downloadMedia: false,
-      });
+      // About Page: use custom processing for proper structure
+      await processAboutPage(OUTPUT_ABOUT_FILE);
     } catch (err) {
       console.warn(`⚠️  Unable to fetch About Page tab: ${err.message}`);
     }
