@@ -388,9 +388,12 @@ class SiteAnimations {
   // Custom circular cursor
   setupCustomCursor() {
     // Check if it's mobile/touch device - hide cursor completely
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                     window.innerWidth <= 768 || 
-                     'ontouchstart' in window;
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      ) ||
+      window.innerWidth <= 768 ||
+      "ontouchstart" in window;
 
     if (isMobile) {
       // On mobile, restore default cursor and don't create custom cursor
@@ -432,7 +435,7 @@ class SiteAnimations {
     document.addEventListener("mousemove", (e) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
-      
+
       // Show cursor on first mouse move
       if (!hasMouseMoved) {
         hasMouseMoved = true;
@@ -442,8 +445,8 @@ class SiteAnimations {
 
     // Smooth cursor follow animation
     const updateCursor = () => {
-      cursorX += (mouseX - cursorX) * 0.15;
-      cursorY += (mouseY - cursorY) * 0.15;
+      cursorX += (mouseX - cursorX) * 0.9;
+      cursorY += (mouseY - cursorY) * 0.9;
 
       gsap.set(cursor, {
         x: cursorX,
@@ -507,7 +510,7 @@ class SiteAnimations {
 
     // Handle window resize - hide cursor on mobile
     window.addEventListener("resize", () => {
-      const isMobileNow = window.innerWidth <= 768 || 'ontouchstart' in window;
+      const isMobileNow = window.innerWidth <= 768 || "ontouchstart" in window;
       if (isMobileNow) {
         gsap.set(cursor, { opacity: 0 });
         document.body.style.cursor = "auto";
