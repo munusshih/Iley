@@ -5,6 +5,7 @@ import "../styles/global.css";
 import type { ImageMetadata } from "astro";
 import FallbackImage from "../assets/blog-placeholder-1.jpg";
 import { SITE_TITLE } from "../consts";
+import Analytics from "@vercel/analytics/astro";
 
 interface Props {
   title: string;
@@ -75,3 +76,6 @@ const { title, description, image = FallbackImage } = Astro.props;
   href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&family=Radio+Canada+Big:ital,wght@0,400..700;1,400..700&display=swap"
   rel="stylesheet"
 />
+
+<!-- Vercel Web Analytics -->
+<Analytics />
