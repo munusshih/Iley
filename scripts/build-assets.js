@@ -22,7 +22,7 @@ const __dirname = path.dirname(__filename);
 
 // Configuration
 const OPENSHEET_URL =
-  "https://opensheet.elk.sh/1o30Uy7jtfAR2lc20Cycahrk13tq_SDdKkIbNQnQvTRY/Work";
+  "https://opensheet.elk.sh/1pdTAOM23hPfqC6ubMiNV-1mV0NgSl5S_pRkH5G5Wcrk/Work";
 const ASSETS_DIR = path.join(__dirname, "../public/assets/projects");
 const OUTPUT_FILE = path.join(__dirname, "../src/data/projects.json");
 
